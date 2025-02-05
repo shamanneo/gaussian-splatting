@@ -1,11 +1,9 @@
 export CUDA_VISIBLE_DEVICES=1
 
-# python train.py \
-#     --source_path /workspace/data/media/ssd1/users/mijin/data/chall_p3_undrone \
-#     --model_path ./output/chal-p3-undrone \
+PORT=$(shuf -i 1024-65535 -n 1)
 
 python train.py \
-    --source_path /workspace/data/media/ssd1/users/mijin/data/chall_p3_drone \
-    --model_path ./output/chal-p3-drone \
-    --port 6010
-
+    --source_path /mnt/sda1/shamanneo/data/ultrra/colmap-hloc/chal/p4/train \
+    --model_path ./output/chal-p4-undrone \
+    --port $PORT \
+    --undrone
