@@ -69,7 +69,10 @@ def loadCam(args, id, cam_info, resolution_scale, is_nerf_synthetic, is_test_dat
 def cameraList_from_camInfos(cam_infos, resolution_scale, args, is_nerf_synthetic, is_test_dataset):
     camera_list = []
 
-    if (args.drone == True) : 
+    if (args.drone == True) and (args.undrone == True) :
+        cam_infos = [cam_info for cam_info in cam_infos]
+        print(f"Both drone and undrone view {len(cam_infos)} loaded")
+    elif (args.drone == True) : 
         cam_infos = [cam_info for cam_info in cam_infos if cam_info.camera_type == "airborne"]
         print(f"Only drone view {len(cam_infos)} loaded")
     elif (args.undrone == True) : 
