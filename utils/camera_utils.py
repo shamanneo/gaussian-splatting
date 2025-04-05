@@ -13,6 +13,7 @@ from scene.cameras import Camera
 import numpy as np
 from utils.graphics_utils import fov2focal
 from PIL import Image
+from tqdm import tqdm
 import cv2
 
 WARNED = False
@@ -69,7 +70,7 @@ def loadCam(args, id, cam_info, resolution_scale, is_nerf_synthetic, is_test_dat
 def cameraList_from_camInfos(cam_infos, resolution_scale, args, is_nerf_synthetic, is_test_dataset):
     camera_list = []
 
-    for id, c in enumerate(cam_infos):
+    for id, c in enumerate(tqdm(cam_infos)):
         camera_list.append(loadCam(args, id, c, resolution_scale, is_nerf_synthetic, is_test_dataset))
 
     return camera_list
