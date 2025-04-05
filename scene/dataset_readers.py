@@ -16,6 +16,7 @@ from typing import NamedTuple
 from scene.colmap_loader import read_extrinsics_text, read_intrinsics_text, qvec2rotmat, \
     read_extrinsics_binary, read_intrinsics_binary, read_points3D_binary, read_points3D_text
 from utils.graphics_utils import getWorld2View2, focal2fov, fov2focal
+from tqdm import tqdm
 import numpy as np
 import json
 from pathlib import Path
@@ -230,11 +231,11 @@ def readCamerasFromTransforms(path, transformsfile, depths_folder, white_backgro
 
     with open(os.path.join(path, transformsfile)) as json_file:
         contents = json.load(json_file)
-        fovx = contents["camera_angle_x"]
+        fovx = focal2fov(contents["fl_x"], contents["w"])
 
         frames = contents["frames"]
-        for idx, frame in enumerate(frames):
-            cam_name = os.path.join(path, frame["file_path"] + extension)
+        for idx, frame in enumerate(tqdm(frames)):
+            cam_name = os.path.join(path, "undistorted_images", frame["file_path"])
 
             # NeRF 'transform_matrix' is a camera-to-world transform
             c2w = np.array(frame["transform_matrix"])
