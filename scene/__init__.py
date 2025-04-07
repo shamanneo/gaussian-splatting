@@ -16,7 +16,7 @@ from utils.system_utils import searchForMaxIteration
 from scene.dataset_readers import sceneLoadTypeCallbacks
 from scene.gaussian_model import GaussianModel
 from arguments import ModelParams
-from utils.camera_utils import cameraList_from_camInfos, camera_to_JSON
+from utils.camera_utils import cameraList_from_camInfos, camera_to_JSON, loadCam
 
 class Scene:
 
@@ -68,12 +68,27 @@ class Scene:
 
         self.cameras_extent = scene_info.nerf_normalization["radius"]
 
-        for resolution_scale in resolution_scales:
-            print("Loading Training Cameras")
-            self.train_cameras[resolution_scale] = cameraList_from_camInfos(scene_info.train_cameras, resolution_scale, args, scene_info.is_nerf_synthetic, False)
-            print("Loading Test Cameras")
-            self.test_cameras[resolution_scale] = cameraList_from_camInfos(scene_info.test_cameras, resolution_scale, args, scene_info.is_nerf_synthetic, True)
+        max_size = 700
+        self.lazy_load = False # prevent OOM from large training data
+        if len(scene_info.train_cameras) > max_size:
+            print("[INFO] Using lazy loading")
+            self.lazy_load = True
 
+        if self.lazy_load == False:
+            for resolution_scale in resolution_scales:
+                print("Loading Training Cameras")
+                self.train_cameras[resolution_scale] = cameraList_from_camInfos(scene_info.train_cameras, resolution_scale, args, scene_info.is_nerf_synthetic, False)
+                print("Loading Test Cameras")
+                self.test_cameras[resolution_scale] = cameraList_from_camInfos(scene_info.test_cameras, resolution_scale, args, scene_info.is_nerf_synthetic, True)
+        else:
+            for resolution_scale in resolution_scales:
+                print("Loading Training Cameras")
+                self.train_cameras[resolution_scale] = scene_info.train_cameras
+                print("Loading Test Cameras")
+                self.test_cameras[resolution_scale] = scene_info.test_cameras
+                self.args = args
+                self.is_nerf_synthetic = scene_info.is_nerf_synthetic
+            
         if self.loaded_iter:
             self.gaussians.load_ply(os.path.join(self.model_path,
                                                            "point_cloud",
@@ -98,3 +113,9 @@ class Scene:
 
     def getTestCameras(self, scale=1.0):
         return self.test_cameras[scale]
+    
+    def getTrainCamera(self, viewpoint_cam, scale=1.0):
+        return loadCam(self.args, viewpoint_cam.uid, viewpoint_cam, scale, self.is_nerf_synthetic, True)
+
+    def getTestCamera(self, viewpoint_cam, scale=1.0):
+        return loadCam(self.args, viewpoint_cam.uid, viewpoint_cam, scale, self.is_nerf_synthetic, False)

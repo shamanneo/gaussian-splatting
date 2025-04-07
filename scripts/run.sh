@@ -1,4 +1,4 @@
-SCENE=0a7cc12c0e
+SCENE=scene02
 OUTPUT_DIR=${SCENE}
 
 python train.py \
